@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
+import investmentRoutes from './routes/investmentRoutes.js';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 connectDB();
 
 app.use('/api/auth', authRoutes);
+app.use('/api/investments', investmentRoutes)
 
 app.get('/', (req, res) => {
   res.json({ message: 'API is running...' });
