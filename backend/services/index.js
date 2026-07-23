@@ -4,7 +4,7 @@ export {
     isROIProcessedToday,
     getUserROIHistory,
     getUserTOtalROI
-} from './roiServise.js'
+} from './roiService.js'
 
 export {
    processReferralIncome,

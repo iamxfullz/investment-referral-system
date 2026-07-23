@@ -4,8 +4,9 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import investmentRoutes from './routes/investmentRoutes.js';
-import { processDailyROI } from './services/roiServise.js';
-import { processReferralIncome } from './services/referralService.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
+import referralRoutes from './routes/referralRoutes.js';
+import { processDailyROI } from './services/roiService.js';
 
 dotenv.config();
 
@@ -17,22 +18,17 @@ app.use(express.urlencoded({ extended: true }));
 
 connectDB();
 
+// Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/investments', investmentRoutes)
+app.use('/api/investments', investmentRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/referrals', referralRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'API is running...' });
 });
 
-app.use((err, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode).json({
-    success: false,
-    message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack
-  });
-});
-
+// Test route for ROI processing
 app.post('/api/test/process-roi', async (req, res) => {
   try {
     const result = await processDailyROI();
@@ -46,6 +42,16 @@ app.post('/api/test/process-roi', async (req, res) => {
       message: error.message
     });
   }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode).json({
+    success: false,
+    message: err.message,
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack
+  });
 });
 
 const PORT = process.env.PORT || 5000;
