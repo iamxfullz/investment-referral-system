@@ -1,10 +1,23 @@
 import User from '../models/User.js';
 import { generateToken } from '../utils/jwt.js';
+import bcrypt from 'bcrypt';
 
 export const registerUser = async (req, res) => {
   try {
+    console.log('📝 Register function called');
+    console.log('Request body:', req.body);
+
     const { fullName, email, mobileNumber, password, referralCode } = req.body;
 
+    // Validate required fields
+    if (!fullName || !email || !mobileNumber || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required: fullName, email, mobileNumber, password'
+      });
+    }
+
+    // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({
@@ -13,6 +26,7 @@ export const registerUser = async (req, res) => {
       });
     }
 
+    // Generate referral code
     let referCode;
     let isUnique = false;
     while (!isUnique) {
@@ -21,6 +35,7 @@ export const registerUser = async (req, res) => {
       if (!existingCode) isUnique = true;
     }
 
+    // Find referrer
     let referredBy = null;
     if (referralCode) {
       const referrer = await User.findOne({ referralCode });
@@ -29,14 +44,21 @@ export const registerUser = async (req, res) => {
       }
     }
 
+    // Hash password here instead of in model
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create user
     const user = await User.create({
       fullName,
       email,
       mobileNumber,
-      password,
+      password: hashedPassword,  // ← Pass the hashed password
       referralCode: referCode,
       referredBy
     });
+
+    console.log('✅ User created:', user._id);
 
     res.status(201).json({
       success: true,
@@ -52,6 +74,7 @@ export const registerUser = async (req, res) => {
     });
 
   } catch (error) {
+    console.error('❌ Registration error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -62,6 +85,7 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
+    console.log('🔑 Login function called');
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -108,6 +132,7 @@ export const loginUser = async (req, res) => {
     });
 
   } catch (error) {
+    console.error('❌ Login error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -135,6 +160,7 @@ export const getCurrentUser = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('❌ Get user error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
