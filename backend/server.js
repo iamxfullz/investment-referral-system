@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import investmentRoutes from './routes/investmentRoutes.js';
+import { processDailyROI } from './services/roiServise.js';
 
 dotenv.config();
 
@@ -29,6 +30,21 @@ app.use((err, req, res, next) => {
     message: err.message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack
   });
+});
+
+app.post('/api/test/process-roi', async (req, res) => {
+  try {
+    const result = await processDailyROI();
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 });
 
 const PORT = process.env.PORT || 5000;
