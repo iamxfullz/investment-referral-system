@@ -5,6 +5,7 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import investmentRoutes from './routes/investmentRoutes.js';
 import { processDailyROI } from './services/roiServise.js';
+import { processReferralIncome } from './services/referralService.js';
 
 dotenv.config();
 
